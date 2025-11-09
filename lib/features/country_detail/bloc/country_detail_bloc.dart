@@ -1,22 +1,21 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/services/api_service.dart';
-import '../../../core/models/country_details.dart';
-import 'detail_event.dart';
-import 'detail_state.dart';
+import 'country_detail_event.dart';
+import 'country_detail_state.dart';
 
-class DetailBloc extends Bloc<DetailEvent, DetailState> {
+class CountryDetailBloc extends Bloc<CountryDetailEvent, CountryDetailState> {
   final ApiService apiService;
 
-  DetailBloc({required this.apiService}) : super(DetailLoading()) {
-    on<LoadDetails>(_onLoadDetails);
+  CountryDetailBloc({required this.apiService}) : super(CountryDetailLoading()) {
+    on<LoadCountryDetails>(_onLoadDetails);
   }
 
-  void _onLoadDetails(LoadDetails event, Emitter<DetailState> emit) async {
+  void _onLoadDetails(LoadCountryDetails event, Emitter<CountryDetailState> emit) async {
     try {
       final details = await apiService.getCountryDetails(event.cca2);
-      emit(DetailLoaded(details));
+      emit(CountryDetailLoaded(details));
     } catch (e) {
-      emit(DetailError(e.toString()));
+      emit(CountryDetailError(e.toString()));
     }
   }
 }

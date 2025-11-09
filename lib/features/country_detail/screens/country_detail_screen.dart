@@ -13,16 +13,16 @@ class CountryDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => DetailBloc(apiService: ApiService())..add(LoadDetails(cca2)),
-      child: BlocBuilder<DetailBloc, DetailState>(
+      create: (context) => CountryDetailBloc(apiService: ApiService())..add(LoadCountryDetails(cca2)),
+      child: BlocBuilder<CountryDetailBloc, CountryDetailState>(
         builder: (context, state) {
-          if (state is DetailLoading) {
+          if (state is CountryDetailLoading) {
             return Scaffold(
               appBar: AppBar(title: Text('Loading...')),
               body: const Center(child: CircularProgressIndicator()),
             );
           }
-          if (state is DetailError) {
+          if (state is CountryDetailError) {
             return Scaffold(
               appBar: AppBar(title: const Text('Error')),
               body: Center(
@@ -30,7 +30,7 @@ class CountryDetailScreen extends StatelessWidget {
                   children: [
                     Text(state.message),
                     ElevatedButton(
-                      onPressed: () => context.read<DetailBloc>().add(LoadDetails(cca2)),
+                      onPressed: () => context.read<CountryDetailBloc>().add(LoadCountryDetails(cca2)),
                       child: const Text('Retry'),
                     ),
                   ],
@@ -38,7 +38,7 @@ class CountryDetailScreen extends StatelessWidget {
               ),
             );
           }
-          final details = (state as DetailLoaded).details;
+          final details = (state as CountryDetailLoaded).details;
           return Scaffold(
             appBar: AppBar(title: Text(details.name)),
             body: SingleChildScrollView(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'features/country_detail/screens/country_detail_screen.dart';
 import 'features/home/screens/home_screen.dart';
 
 final GoRouter router = GoRouter(
@@ -13,7 +14,7 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const FavoritesScreen(),
     ),
     GoRoute(
-      path: '/detail/:cca2',
+      path: '/country-detail/:cca2',
       builder: (context, state) {
         final cca2 = state.pathParameters['cca2']!;
         return CountryDetailScreen(cca2: cca2);

@@ -1,8 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:equatable/equatable.dart';
 
-part 'country_details.freezed.dart';
-part 'country_details.g.dart';
 
 @freezed
 class CountryDetails with _$CountryDetails {

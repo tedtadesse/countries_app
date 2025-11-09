@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../app_routes.dart';
 
+import '../bloc/home_bloc.dart';
+import '../bloc/home_event.dart';
+import '../bloc/home_state.dart';
 import '../widgets/country_list_item.dart';
 import '../../../core/services/api_service.dart';
 
@@ -78,7 +81,7 @@ class HomeView extends StatelessWidget {
                     final country = countries[index];
                     return CountryListItem(
                       country: country,
-                      onTap: () => context.push('/detail/${country.cca2}'),
+                      onTap: () => context.push('/country-detail/${country.cca2}'),
                     );
                   },
                 ),

@@ -1,12 +1,12 @@
 import 'package:equatable/equatable.dart';
 
-abstract class DetailEvent extends Equatable {
-  const DetailEvent();
+abstract class CountryDetailEvent extends Equatable {
+  const CountryDetailEvent();
 }
 
-class LoadDetails extends DetailEvent {
+class LoadCountryDetails extends CountryDetailEvent {
   final String cca2;
-  const LoadDetails(this.cca2);
+  const LoadCountryDetails(this.cca2);
 
   @override
   List<Object?> get props => [cca2];

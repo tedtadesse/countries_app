@@ -1,26 +1,27 @@
 import 'package:equatable/equatable.dart';
 import '../../../core/models/country_details.dart';
+import '../../../data/models/country_details.dart';
 
-abstract class DetailState extends Equatable {
-  const DetailState();
+abstract class CountryDetailState extends Equatable {
+  const CountryDetailState();
 }
 
-class DetailLoading extends DetailState {
+class CountryDetailLoading extends CountryDetailState {
   @override
   List<Object?> get props => [];
 }
 
-class DetailLoaded extends DetailState {
+class CountryDetailLoaded extends CountryDetailState {
   final CountryDetails details;
-  const DetailLoaded(this.details);
+  const CountryDetailLoaded(this.details);
 
   @override
   List<Object?> get props => [details];
 }
 
-class DetailError extends DetailState {
+class CountryDetailError extends CountryDetailState {
   final String message;
-  const DetailError(this.message);
+  const CountryDetailError(this.message);
 
   @override
   List<Object?> get props => [message];
