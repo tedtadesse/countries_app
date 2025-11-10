@@ -38,15 +38,16 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       return;
     }
 
-    emit(HomeLoading());
+    final currentSort = state is HomeLoaded ? (state as HomeLoaded).sortOrder : SortOrder.nameAsc;
+
     try {
       final results = await _api.searchCountries(q);
-      final current = state as HomeLoaded;
-      emit(_applySort(_all, results, q, current.sortOrder));
+      emit(_applySort(_all, results, q, currentSort));
     } catch (e) {
       emit(HomeError('No countries found for "$q"'));
     }
   }
+
 
   Future<void> _clearSearch(ClearSearch _, Emitter<HomeState> emit) async {
     final current = state as HomeLoaded;
