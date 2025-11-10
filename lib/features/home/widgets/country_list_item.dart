@@ -1,38 +1,81 @@
-import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_text_style.dart';
 import '../../../core/utils/population_formatter.dart';
 import '../../../data/models/country_summary.dart';
 
 class CountryListItem extends StatelessWidget {
   final CountrySummary country;
-  final VoidCallback onTap;
   final bool isFavorite;
-  final VoidCallback onToggleFavorite;
+  final VoidCallback onToggle;
+  final VoidCallback onTap;
 
   const CountryListItem({
     super.key,
     required this.country,
+    required this.isFavorite,
+    required this.onToggle,
     required this.onTap,
-    this.isFavorite = false,
-    required this.onToggleFavorite,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: CachedNetworkImage(
-        imageUrl: country.flag,
-        width: 50,
-        height: 35,
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 0,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        leading: _buildFlagImage(),
+        title: Text(
+          country.name,
+          style: AppTextStyles.listTitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          formatPopulation(country.population),
+          style: AppTextStyles.listSubtitle,
+        ),
+        trailing: _buildFavoriteButton(),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _buildFlagImage() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: CachedNetworkImage(
+        imageUrl: country.flagPng,
+        width: 56,
+        height: 36,
         fit: BoxFit.cover,
+        placeholder: (_, __) => Container(
+          width: 56,
+          height: 36,
+          color: Colors.grey[200],
+        ),
+        errorWidget: (_, __, ___) => Container(
+          width: 56,
+          height: 36,
+          color: Colors.grey[200],
+          child: const Icon(Icons.flag, size: 20),
+        ),
+        memCacheHeight: 72, // Reduce cache size
+        memCacheWidth: 112,
       ),
-      title: Text(country.name),
-      subtitle: Text('Population: ${formatPopulation(country.population)}'),
-      trailing: IconButton(
-        icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border, color: isFavorite ? Colors.red : null),
-        onPressed: onToggleFavorite,
+    );
+  }
+
+  Widget _buildFavoriteButton() {
+    return IconButton(
+      icon: Icon(
+        isFavorite ? Icons.favorite : Icons.favorite_border,
+        color: isFavorite ? AppColors.favorite : null,
       ),
-      onTap: onTap,
+      onPressed: onToggle,
     );
   }
 }

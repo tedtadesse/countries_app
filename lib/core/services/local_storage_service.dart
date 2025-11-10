@@ -3,29 +3,41 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/models/favorite_country.dart';
 
 class LocalStorageService {
-  static const String _favoritesKey = 'favorites';
+  static const _key = 'favorite_countries';
 
-  Future<void> saveFavorites(List<FavoriteCountry> favorites) async {
+  Future<void> save(List<FavoriteCountry> favs) async {
     final prefs = await SharedPreferences.getInstance();
-    final jsonList = favorites.map((f) => {
-      'cca2': f.cca2,
-      'name': f.name,
-      'flag': f.flag,
-      'capital': f.capital,
-    }).toList();
-    await prefs.setString(_favoritesKey, json.encode(jsonList));
+    final json = favs
+        .map((e) => {
+      'cca2': e.cca2,
+      'name': e.name,
+      'flag': e.flag,
+      'capital': e.capital,
+    })
+        .toList();
+    await prefs.setString(_key, jsonEncode(json));
   }
 
-  Future<List<FavoriteCountry>> loadFavorites() async {
+  Future<List<FavoriteCountry>> load() async {
     final prefs = await SharedPreferences.getInstance();
-    final jsonString = prefs.getString(_favoritesKey);
-    if (jsonString == null) return [];
-    final List<dynamic> jsonList = json.decode(jsonString);
-    return jsonList.map((json) => FavoriteCountry(
-      cca2: json['cca2'],
-      name: json['name'],
-      flag: json['flag'],
-      capital: json['capital'],
-    )).toList();
+    final raw = prefs.getString(_key);
+    if (raw == null) return [];
+
+    try {
+      final List<dynamic> list = jsonDecode(raw);
+      return list.map<FavoriteCountry>((e) {
+        final map = e as Map<String, dynamic>;
+        return FavoriteCountry(
+          cca2: map['cca2'] as String,
+          name: map['name'] as String,
+          flag: map['flag'] as String,
+          capital: map['capital'] as String?,
+        );
+      }).toList();
+    } catch (e) {
+      print('Corrupted favorites data: $e');
+      await prefs.remove(_key);
+      return [];
+    }
   }
 }

@@ -4,18 +4,22 @@ import 'country_detail_event.dart';
 import 'country_detail_state.dart';
 
 class CountryDetailBloc extends Bloc<CountryDetailEvent, CountryDetailState> {
-  final ApiService apiService;
+  final ApiService _api;
+  String? cca2;
 
-  CountryDetailBloc({required this.apiService}) : super(CountryDetailLoading()) {
-    on<LoadCountryDetails>(_onLoadDetails);
+  CountryDetailBloc(this._api) : super(DetailLoading()) {
+    on<LoadDetail>(_load);
   }
 
-  void _onLoadDetails(LoadCountryDetails event, Emitter<CountryDetailState> emit) async {
+  Future<void> _load(LoadDetail ev, Emitter<CountryDetailState> emit) async {
+    cca2 = ev.cca2;
+    emit(DetailLoading());
+
     try {
-      final details = await apiService.getCountryDetails(event.cca2);
-      emit(CountryDetailLoaded(details));
+      final data = await _api.getCountryDetails(ev.cca2);
+      emit(DetailLoaded(data));
     } catch (e) {
-      emit(CountryDetailError(e.toString()));
+      emit(DetailError(e.toString()));
     }
   }
 }

@@ -1,24 +1,25 @@
-import 'package:flutter/material.dart';
-import 'features/country_detail/screens/country_detail_screen.dart';
-import 'features/home/screens/home_screen.dart';
+import 'package:go_router/go_router.dart';
 
-final GoRouter router = GoRouter(
+import 'features/favorites/screens/favorite_screen.dart';
+import 'features/home/screens/home_screen.dart';
+import 'features/country_detail/screens/country_detail_screen.dart';
+
+final router = GoRouter(
   initialLocation: '/home',
   routes: [
     GoRoute(
       path: '/home',
-      builder: (context, state) => const HomeScreen(),
+      builder: (_, __) => const HomeScreen(),
     ),
     GoRoute(
       path: '/favorites',
-      builder: (context, state) => const FavoritesScreen(),
+      builder: (_, __) => const FavoritesScreen(),
     ),
     GoRoute(
-      path: '/country-detail/:cca2',
-      builder: (context, state) {
-        final cca2 = state.pathParameters['cca2']!;
-        return CountryDetailScreen(cca2: cca2);
-      },
+      path: '/detail/:cca2',
+      builder: (_, state) => CountryDetailScreen(
+        cca2: state.pathParameters['cca2']!,
+      ),
     ),
   ],
 );
