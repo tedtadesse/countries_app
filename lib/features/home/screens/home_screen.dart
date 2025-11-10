@@ -4,6 +4,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../core/services/api_service.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../data/models/country_summary.dart';
 import '../../favorites/bloc/favorites_state.dart';
 import '../bloc/home_bloc.dart';
@@ -12,6 +13,7 @@ import '../bloc/home_state.dart';
 import '../widgets/country_list_item.dart';
 import '../../favorites/bloc/favorites_bloc.dart';
 import '../../favorites/bloc/favorites_event.dart';
+import '../widgets/sort_button.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -20,7 +22,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => HomeBloc(sl<ApiService>()),
-           child: const HomeView(),
+      child: const HomeView(),
     );
   }
 }
@@ -30,11 +32,32 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Countries')),
+      backgroundColor: isDark ? AppColors.darkCard : Colors.white,
+      appBar: AppBar(title: const Center(child: Text('Countries'))),
       body: Column(
         children: [
-          _buildSearchField(context),
+          Row(
+            children: [
+              Expanded(child: _buildSearchField(context)),
+              BlocBuilder<HomeBloc, HomeState>(
+                builder: (context, state) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 16.0),
+                    child: SortButton(
+                      sortOrder:
+                          state is HomeLoaded
+                              ? state.sortOrder
+                              : SortOrder.nameAsc,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+
           Expanded(child: _buildCountryList(context)),
         ],
       ),
@@ -43,15 +66,56 @@ class HomeView extends StatelessWidget {
   }
 
   Widget _buildSearchField(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: TextField(
-        onChanged: (q) => context.read<HomeBloc>().add(SearchCountries(q)),
-        decoration: const InputDecoration(
-          hintText: 'Search for a country',
-          prefixIcon: Icon(Icons.search),
-        ),
-      ),
+    return BlocSelector<HomeBloc, HomeState, String>(
+      selector: (state) => state is HomeLoaded ? state.searchQuery : '',
+      builder: (context, searchQuery) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: TextField(
+            onChanged: (q) => context.read<HomeBloc>().add(SearchCountries(q)),
+            controller: TextEditingController(text: searchQuery),
+            decoration: InputDecoration(
+              hintText: 'Search for a country',
+              hintStyle: TextStyle(color: Color(0xFF6B7582)),
+              prefixIcon: Padding(
+                padding: const EdgeInsets.only(left: 12.0),
+                child: const Icon(Icons.search, color: Color(0xFF6B7582)),
+              ),
+
+              suffixIcon: searchQuery.isNotEmpty
+                  ? Container(
+                margin: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.grey, width: 2),
+                ),
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(Icons.clear, size: 16),
+                    onPressed: () {
+                      context.read<HomeBloc>().add(ClearSearch());
+                    },
+                  ),
+                ),
+              )
+                  : null,
+              contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -63,6 +127,7 @@ class HomeView extends StatelessWidget {
 
         final loaded = state as HomeLoaded;
         final countries = loaded.filtered;
+        final searchQuery = loaded.searchQuery;
 
         if (countries.isEmpty) {
           return const Center(child: Text('No countries found.'));
@@ -70,12 +135,14 @@ class HomeView extends StatelessWidget {
 
         return RefreshIndicator(
           onRefresh: () async => context.read<HomeBloc>().add(LoadCountries()),
-          child: _CountryListView(countries: countries),
+          child: _CountryListView(
+            countries: countries,
+            searchQuery: searchQuery,
+          ),
         );
       },
     );
   }
-
   Widget _buildErrorState(BuildContext context, HomeError state) {
     return Center(
       child: Column(
@@ -93,25 +160,34 @@ class HomeView extends StatelessWidget {
   }
 
   Widget _buildBottomNav(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return BottomNavigationBar(
       currentIndex: 0,
       onTap: (i) => i == 1 ? context.go('/favorites') : null,
-      selectedItemColor: Colors.black,
-      unselectedItemColor: Colors.grey,
+
+      selectedItemColor: isDark ? Colors.white : AppColors.darkCard ,
+      unselectedItemColor: isDark ? Colors.grey : Colors.grey[600],
       type: BottomNavigationBarType.fixed,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.favorite_border), label: 'Favorites'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.favorite_border),
+          label: 'Favorites',
+        ),
       ],
     );
   }
 }
 
-// Separate widget to optimize rebuilds
 class _CountryListView extends StatelessWidget {
   final List<CountrySummary> countries;
+  final String searchQuery;
 
-  const _CountryListView({required this.countries});
+  const _CountryListView({
+    required this.countries,
+    this.searchQuery = '',
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -120,16 +196,22 @@ class _CountryListView extends StatelessWidget {
       itemCount: countries.length,
       itemBuilder: (_, i) {
         final country = countries[i];
-        return _CountryListItem(country: country);
+        return _CountryListItem(
+          country: country,
+          searchQuery: searchQuery,
+        );
       },
     );
   }
 }
-
 class _CountryListItem extends StatelessWidget {
   final CountrySummary country;
+  final String searchQuery;
 
-  const _CountryListItem({required this.country});
+  const _CountryListItem({
+    required this.country,
+    this.searchQuery = '',
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -142,31 +224,49 @@ class _CountryListItem extends StatelessWidget {
         return CountryListItem(
           country: country,
           isFavorite: isFavorite,
-          onToggle: () => context.read<FavoritesBloc>().add(ToggleFavorite(country)),
+          showPopulation: searchQuery.isEmpty,
+            onToggle: () async {
+              final bloc = context.read<FavoritesBloc>();
+              final currentState = bloc.state;
+              final alreadyFavorite = currentState is FavoritesLoaded &&
+                  currentState.favorites.any((f) => f.cca2 == country.cca2);
+
+              if (!alreadyFavorite) {
+                final details = await sl<ApiService>().getCountryDetails(country.cca2);
+                bloc.add(ToggleFavorite(country, details.capital));
+              } else {
+                bloc.add(ToggleFavorite(country));
+              }
+            },
           onTap: () => context.push('/detail/${country.cca2}'),
         );
       },
     );
   }
 }
+
 class _ShimmerList extends StatelessWidget {
   const _ShimmerList();
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Shimmer.fromColors(
       baseColor: Colors.grey[200]!,
       highlightColor: Colors.grey[100]!,
       child: ListView.builder(
         itemCount: 10,
-        itemBuilder: (_, __) => Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          child: ListTile(
-            leading: Container(width: 56, height: 36, color: Colors.white),
-            title: Container(height: 16, color: Colors.white),
-            subtitle: Container(height: 14, color: Colors.white),
-          ),
-        ),
+        itemBuilder:
+            (_, __) => Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              child: ListTile(
+
+                leading: Container(width: 56, height: 36, color: isDark ? AppColors.darkCard : Colors.white),
+                title: Container(height: 16, color: isDark ? AppColors.darkCard : Colors.white),
+                subtitle: Container(height: 14, color: isDark ? AppColors.darkCard : Colors.white),
+              ),
+            ),
       ),
     );
   }

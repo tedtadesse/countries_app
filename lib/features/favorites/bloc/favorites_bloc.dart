@@ -25,17 +25,22 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
   Future<void> _toggle(ToggleFavorite ev, Emitter<FavoritesState> emit) async {
     final current = (state as FavoritesLoaded).favorites;
     final exists = current.any((f) => f.cca2 == ev.country.cca2);
-    final updated = exists
-        ? current.where((f) => f.cca2 != ev.country.cca2).toList()
-        : [
-      ...current,
-      FavoriteCountry(
-        cca2: ev.country.cca2,
-        name: ev.country.name,
-        flag: ev.country.flagPng,
-        capital: null,
-      ),
-    ];
+
+    List<FavoriteCountry> updated;
+    if (exists) {
+      updated = current.where((f) => f.cca2 != ev.country.cca2).toList();
+    } else {
+      updated = [
+        ...current,
+        FavoriteCountry(
+          cca2: ev.country.cca2,
+          name: ev.country.name,
+          flag: ev.country.flagPng,
+          capital: ev.capital,
+        ),
+      ];
+    }
+
     await _storage.save(updated);
     emit(FavoritesLoaded(updated));
   }

@@ -21,7 +21,7 @@ class CountriesApp extends StatelessWidget {
       child: MaterialApp.router(
         title: 'Countries',
         theme: AppTheme.light,
-        darkTheme: AppTheme.light,
+        darkTheme: AppTheme.dark,
         themeMode: ThemeMode.system,
         routerConfig: router,
         debugShowCheckedModeBanner: false,

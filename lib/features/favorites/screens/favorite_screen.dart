@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../core/services/local_storage_service.dart';
+import '../../../core/theme/app_colors.dart';
 import '../bloc/favorites_bloc.dart';
 import '../bloc/favorites_event.dart';
 import '../bloc/favorites_state.dart';
@@ -23,12 +25,15 @@ class FavoritesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(title: Center(child: const Text('Favorites'))),
+      backgroundColor: isDark ? AppColors.darkCard : Colors.white,
+      appBar: AppBar(title: Center(child: Center(child: const Text('Favorites')))),
       body: BlocBuilder<FavoritesBloc, FavoritesState>(
         builder: (ctx, state) {
           if (state is FavoritesLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const _ShimmerList();
           }
           final favs = (state as FavoritesLoaded).favorites;
           if (favs.isEmpty) {
@@ -60,12 +65,37 @@ class FavoritesView extends StatelessWidget {
         currentIndex: 1,
         onTap: (i) => i == 0 ? context.go('/home') : null,
 
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: isDark ? Colors.white: AppColors.darkCard ,
+        unselectedItemColor: isDark ? Colors.grey : Colors.grey[600],
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorites'),
         ],
+      ),
+    );
+  }
+}
+class _ShimmerList extends StatelessWidget {
+  const _ShimmerList();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[200]!,
+      highlightColor: Colors.grey[100]!,
+      child: ListView.builder(
+        itemCount: 10,
+        itemBuilder:
+            (_, __) => Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          child: ListTile(
+            leading: Container(width: 56, height: 36, color: isDark ? AppColors.darkCard : Colors.white),
+            title: Container(height: 16, color: isDark ? AppColors.darkCard : Colors.white),
+            subtitle: Container(height: 14, color: isDark ? AppColors.darkCard : Colors.white),
+          ),
+        ),
       ),
     );
   }

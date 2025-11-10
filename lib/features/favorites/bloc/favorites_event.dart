@@ -11,7 +11,10 @@ class LoadFavorites extends FavoritesEvent {}
 
 class ToggleFavorite extends FavoritesEvent {
   final CountrySummary country;
-  const ToggleFavorite(this.country);
+  final String? capital;
+
+  const ToggleFavorite(this.country, [this.capital]);
+
   @override
-  List<Object?> get props => [country.cca2];
+  List<Object?> get props => [country, capital];
 }
