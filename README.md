@@ -1,16 +1,65 @@
-# countries_app
+# Countries App
 
-A new Flutter project.
+A Flutter mobile application for browsing, searching, and learning about world countries with favorite management capabilities.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- **Browse Countries**: View all countries with flags, names, and population
+- **Search**: Real-time country search with debouncing
+- **Country Details**: Detailed information including area, population, region, timezones
+- **Favorites**: Save and manage favorite countries with local persistence
+- **Responsive UI**: Clean, modern interface following Material Design
 
-A few resources to get you started if this is your first Flutter project:
+## Tech Stack
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Flutter 3.29.3** - Dart framework
+- **State Management**: BLoC with Cubit
+- **HTTP Client**: Dio with caching
+- **Local Storage**: Shared Preferences
+- **Routing**: Go Router for navigation
+- **UI**: Custom theme with shimmer loading states
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Architecture
+
+The app follows a clean architecture pattern with:
+- **Data Layer**: API service and local storage
+- **Domain Layer**: BLoC for state management
+- **Presentation Layer**: Widgets and screens
+
+## Setup
+
+1. **Clone the repository**
+- git clone https://github.com/tedtadesse/countries_app
+- cd countries_app
+
+2. **Install dependencies**
+- flutter pub get
+
+3. **Run the app**
+- flutter run
+
+## Project Structure
+
+lib/
+├── core/
+│   ├── di/           # Dependency injection
+│   ├── services/     # API & local storage
+│   └── theme/        # App themes & styling
+├── data/
+│   └── models/       # Data models
+└── features/
+├── home/         # Country list & search
+├── favorites/    # Favorite management
+└── country_detail/ # Detailed country view
+
+## API
+
+Uses [REST Countries API](https://restcountries.com) with:
+- Minimal data fetching for lists
+- Detailed data for individual countries
+- Caching for performance
+
+## Build
+
+Generate APK:
+- flutter build apk --release
